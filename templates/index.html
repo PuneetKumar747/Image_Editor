@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Filter WebApp</title>
+    <style>
+        body {
+            text-align: center;
+            margin-top: 50px;
+        }
+        form {
+            display: inline-block;
+        }
+        input[type="submit"] {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        label {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        img {
+            margin-top: 20px;
+            max-width: 500px;
+            height: auto;
+        }
+    </style>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+</head>
+<body>
+    <h1>Image Filter WebApp</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" id="fileInput" accept="image/*">
+        <label for="fileInput">Choose Image</label>
+        <select name="filter" id="filter">
+            <option value="select">Select</option>
+            <option value="crop">Crop</option>
+            <option value="rotate">Rotate</option>
+            <option value="blur">Blur</option>
+            <option value="sketch">Sketch</option>
+        </select>
+        <input type="number" name="intensity" id="intensity" min="1" max="10" value="1" step="1" style="display: none;">
+        <input type="number" name="angle" id="angle" placeholder="Enter angle" style="display: none;">
+        <input type="number" name="left" id="left" placeholder="Enter left" style="display: none;">
+        <input type="number" name="right" id="right" placeholder="Enter right" style="display: none;">
+        <input type="number" name="top" id="top" placeholder="Enter top" style="display: none;">
+        <input type="number" name="bottom" id="bottom" placeholder="Enter bottom" style="display: none;">
+        <input type="submit" value="Apply Filter">
+    </form>
+    <div id="image-container">
+        {% if image %}
+            <img src="{{ image }}" alt="Filtered Image">
+        {% endif %}
+    </div>
+    <canvas id="canvas" style="display: none;"></canvas>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        var cropper;
+
+        document.getElementById('filter').addEventListener('change', function() {
+            var filter = this.value;
+            if (filter === 'blur') {
+                document.getElementById('intensity').style.display = 'inline-block';
+                document.getElementById('angle').style.display = 'none';
+                document.getElementById('left').style.display = 'none';
+                document.getElementById('right').style.display = 'none';
+                document.getElementById('top').style.display = 'none';
+                document.getElementById('bottom').style.display = 'none';
+                if (cropper) {
+                    cropper.destroy();
+                }
+            } else if (filter === 'rotate') {
+                document.getElementById('angle').style.display = 'inline-block';
+                document.getElementById('intensity').style.display = 'none';
+                document.getElementById('left').style.display = 'none';
+                document.getElementById('right').style.display = 'none';
+                document.getElementById('top').style.display = 'none';
+                document.getElementById('bottom').style.display = 'none';
+                if (cropper) {
+                    cropper.destroy();
+                }
+            } else if (filter === 'crop') {
+                document.getElementById('left').style.display = 'inline-block';
+                document.getElementById('right').style.display = 'inline-block';
+                document.getElementById('top').style.display = 'inline-block';
+                document.getElementById('bottom').style.display = 'inline-block';
+                document.getElementById('intensity').style.display = 'none';
+                document.getElementById('angle').style.display = 'none';
+                if (!cropper) {  // Only initialize Cropper.js if it's not already initialized
+                    var img = document.getElementById('canvas');
+                    cropper = new Cropper(img, {
+                        aspectRatio: NaN,
+                        crop(event) {
+                            document.getElementById('left').value = Math.round(event.detail.x);
+                            document.getElementById('right').value = Math.round(event.detail.x + event.detail.width);
+                            document.getElementById('top').value = Math.round(event.detail.y);
+                            document.getElementById('bottom').value = Math.round(event.detail.y + event.detail.height);
+                        },
+                    });
+                }
+            } else {
+                // If "Select" is chosen, destroy Cropper.js if initialized
+                if (cropper) {
+                    cropper.destroy();
+                }
+                // Hide all input fields
+                document.getElementById('intensity').style.display = 'none';
+                document.getElementById('angle').style.display = 'none';
+                document.getElementById('left').style.display = 'none';
+                document.getElementById('right').style.display = 'none';
+                document.getElementById('top').style.display = 'none';
+                document.getElementById('bottom').style.display = 'none';
+            }
+        });
+
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var filter = document.getElementById('filter').value;
+            if (filter === 'crop') {
+                var left = document.getElementById('left').value;
+                var right = document.getElementById('right').value;
+                var topVal = document.getElementById('top').value;
+                var bottom = document.getElementById('bottom').value;
+                if (left === '' || right === '' || topVal === '' || bottom === '') {
+                    alert('Please fill in all crop dimensions.');
+                    e.preventDefault();
+                }
+            }
+        });
+
+        document.getElementById('fileInput').addEventListener('change', function (e) {
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function (event) {
+                var img = document.createElement('img');
+                img.onload = function () {
+                    if (cropper) {
+                        cropper.destroy();
+                    }
+                    var canvas = document.getElementById('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    var ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
