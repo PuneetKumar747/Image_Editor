@@ -66,7 +66,7 @@ def upload():
         intensity = int(request.form['intensity'])
         img = img.filter(ImageFilter.GaussianBlur(radius=intensity))
     elif filter_type == 'sketch':
-        img = colorful_sketch_filter(img)  # Apply colorful sketch filter
+        img = pencil_sketch_filter(img)  # Apply colorful sketch filter
     images[i] = img
     img_byte_array = io.BytesIO()
     img.save(img_byte_array, format='PNG')  # Save as PNG format
