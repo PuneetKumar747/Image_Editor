@@ -5,9 +5,9 @@ import base64
 
 app = Flask(__name__)
 
-def colorful_sketch_filter(image):
+def pencil_sketch_filter(image):
     # Convert image to grayscale
-    gray_image = ImageOps.grayscale(image)
+    gray_image = image.convert('L')
     
     # Invert the grayscale image
     inverted_image = ImageOps.invert(gray_image)
@@ -15,21 +15,10 @@ def colorful_sketch_filter(image):
     # Apply Gaussian blur to the inverted image
     blurred_image = inverted_image.filter(ImageFilter.GaussianBlur(radius=2))
     
-    # Blend the blurred image with the original image using color dodge
-    sketch_image = Image.new('RGB', image.size)
-    for x in range(image.width):
-        for y in range(image.height):
-            original_color = image.getpixel((x, y))  # Retrieve color from original image
-            sketch_color = blurred_image.getpixel((x, y))  # Retrieve color from blurred image
-            r = min(int(original_color[0] + (original_color[0] * (sketch_color / 255))), 255)
-            g = min(int(original_color[1] + (original_color[1] * (sketch_color / 255))), 255)
-            b = min(int(original_color[2] + (original_color[2] * (sketch_color / 255))), 255)
-            sketch_image.putpixel((x, y), (r, g, b))
+    # Invert the blurred image
+    final_image = ImageOps.invert(blurred_image)
     
-    return sketch_image
-
-
-
+    return final_image
 
 
 
@@ -78,7 +67,7 @@ def upload():
         img = img.filter(ImageFilter.GaussianBlur(radius=intensity))
     elif filter_type == 'sketch':
         img = colorful_sketch_filter(img)  # Apply colorful sketch filter
-    
+    images[i] = img
     img_byte_array = io.BytesIO()
     img.save(img_byte_array, format='PNG')  # Save as PNG format
     img_byte_array.seek(0)
