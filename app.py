@@ -31,6 +31,12 @@ def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
+def upload():
+    if request.method == 'POST':
+        return redirect(url_for('apply_filter'))
+    return render_template('index.html')
+    
+@app.route('/apply_filter', methods=['POST'])
 def apply_filter():
     ##
     if 'file' in request.files:
