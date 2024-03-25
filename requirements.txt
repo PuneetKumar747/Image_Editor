@@ -1,5 +1,7 @@
 Flask
 Pillow
 gunicorn
-
+cv2
+numpy
+requests
 
