@@ -77,5 +77,28 @@ def upload():
 
     return render_template('result.html', result_image=encoded_img)
 
+@app.route('/download', methods=['POST'])
+def download():
+    # Get image data and format from form submission
+    image_data = request.form['image']
+    format = request.form['format']
+
+    # Decode base64 image data
+    img_bytes = base64.b64decode(image_data)
+
+    # Create file-like object from image data
+    img_io = io.BytesIO(img_bytes)
+
+    # Set content type based on format
+    content_type = f'image/{format}'
+    
+    # Define default filename if not provided
+    filename = 'filtered_image'
+    if 'filename' in request.form:
+        filename = request.form['filename']
+
+    # Return the file data as a response
+    return Response(img_io, mimetype=content_type, headers={'Content-Disposition': f'attachment;filename={filename}.{format}'})
+
 if __name__ == '__main__':
     app.run(debug=True)
