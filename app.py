@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response
 from PIL import Image, ImageFilter, ImageEnhance, ImageOps
 import io
 import base64
+import cv2
+import numpy as np
+import requests
 
 
 app = Flask(__name__)
@@ -29,16 +32,20 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    if 'file' not in request.files:
-        return redirect(request.url)
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return redirect(request.url)
-    
-    img = Image.open(io.BytesIO(file.read()))
-    
+    ##
+    if 'file' in request.files:
+        file = request.files['file']
+        if file.filename == '':
+            return redirect(request.url)
+        img = Image.open(io.BytesIO(file.read()))
+        img_bytes = img.tobytes()
+    elif 'url' in request.form:
+        url = request.form['url']
+        response = requests.get(url)
+        img = Image.open(io.BytesIO(response.content))
+    else:
+        return "No file or URL provided."
+    ##
     filter_type = request.form['filter']
     if filter_type == 'crop':
         left = int(request.form['left'])
@@ -68,6 +75,16 @@ def upload():
         img = img.filter(ImageFilter.GaussianBlur(radius=intensity))
     elif filter_type == 'sketch':
         img = pencil_sketch_filter(img)  # Apply colorful sketch filter
+    ##
+    elif filter_type == 'flip':
+        direction = request.form['direction']
+        if direction == 'horizontal':
+            img = ImageOps.mirror(img)
+        elif direction == 'vertical':
+            img = ImageOps.flip(img)
+    elif filter_type == 'sketch':
+        img = pencil_sketch()
+        ##
     # images[i] = img
     img_byte_array = io.BytesIO()
     img.save(img_byte_array, format='PNG')  # Save as PNG format
@@ -77,8 +94,29 @@ def upload():
     encoded_img = base64.b64encode(img_byte_array.getvalue()).decode('utf-8')
 
     return render_template('result.html', result_image=encoded_img)
+    ##
+@app.route('/download', methods=['POST'])
+def download():
+    # Get image data and format from form submission
+    image_data = request.form['image']
+    format = request.form['format']
 
+    # Decode base64 image data
+    img_bytes = base64.b64decode(image_data)
 
+    # Create file-like object from image data
+    img_io = io.BytesIO(img_bytes)
 
+    # Set content type based on format
+    content_type = f'image/{format}'
+    
+    # Define default filename if not provided
+    filename = 'filtered_image'
+    if 'filename' in request.form:
+        filename = request.form['filename']
+
+    # Return the file data as a response
+    return Response(img_io, mimetype=content_type, headers={'Content-Disposition': f'attachment;filename={filename}.{format}'})
+    ##
 if __name__ == '__main__':
     app.run(debug=True)
