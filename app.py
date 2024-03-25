@@ -31,7 +31,7 @@ def index():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
-def upload():
+def apply_filter():
     ##
     if 'file' in request.files:
         file = request.files['file']
