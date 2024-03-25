@@ -24,6 +24,23 @@
             display: block;
             margin: 0 auto;
         }
+        .download-btn-container {
+            margin-top: 20px;
+        }
+        .download-btn-container form {
+            display: inline-block;
+            margin-right: 10px;
+        }
+        .download-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -31,6 +48,23 @@
         <h1>Here is your desired image</h1>
         <div id="image-container">
             <img src="data:image/png;base64,{{ result_image }}" alt="Filtered Image">
+        </div>
+        <div class="download-btn-container">
+            <form action="/download" method="POST">
+                <input type="hidden" name="image" value="{{ result_image }}">
+                <input type="hidden" name="format" value="png">
+                <input type="submit" class="download-btn" value="Download PNG">
+            </form>
+            <form action="/download" method="POST">
+                <input type="hidden" name="image" value="{{ result_image }}">
+                <input type="hidden" name="format" value="jpg">
+                <input type="submit" class="download-btn" value="Download JEPG">
+            </form>
+            <form action="/download" method="POST">
+                <input type="hidden" name="image" value="{{ result_image }}">
+                <input type="hidden" name="format" value="pdf">
+                <input type="submit" class="download-btn" value="Download PDF">
+            </form>
         </div>
     </div>
 </body>
