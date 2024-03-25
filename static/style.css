@@ -1,9 +1,9 @@
 body {
     text-align: center;
     margin-top: 50px;
-    background-image: url('b.jpg'); /* Replace 'background.jpg' with your image file */
-    background-size: cover;
-    background-repeat: no-repeat;
+    background-image: url('k.jpeg'); /* Replace 'background.jpg' with your image file */
+    background-size: adjust;
+    background-repeat: repeat;
 }
 
 .container {
