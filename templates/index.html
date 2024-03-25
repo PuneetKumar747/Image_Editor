@@ -12,6 +12,8 @@
         }
         form {
             display: inline-block;
+            flex-direction: column;
+            align-items: center;
         }
         input[type="submit"] {
             padding: 10px 20px;
@@ -21,6 +23,15 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
+        }
+        input[type="file"], input[type="text"] {
+            display: block;
+            margin: 0 auto 20px auto;
+            padding: 10px;
+            width: 80%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
         }
         input[type="file"] {
             display: none;
@@ -78,7 +89,10 @@
             <option value="sketch">Black&white</option>
             <option value="flip">Flip</option>
             <option value ="sketch" >Sketch</option>
-            
+        </select>
+        <select name="direction" id="direction">
+            <option value="horizontal">Horizontal</option>
+            <option value="vertical">Vertical</option>
         </select>
         <input type="number" name="intensity" id="intensity" min="1" max="10" value="1" step="1" style="display: none;">
         <input type="number" name="angle" id="angle" placeholder="Enter angle" style="display: none;">
