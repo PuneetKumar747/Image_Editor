@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, Response
 from PIL import Image, ImageFilter, ImageEnhance, ImageOps
 import io
 import base64
+import requests
 
 app = Flask(__name__)
 
